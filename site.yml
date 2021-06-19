@@ -1,0 +1,33 @@
+---
+- name: Play to setup web server
+  hosts: all
+
+  tasks:
+    - name: web server is enabled
+      apt:
+        name: apache2
+        state: present
+      tags:
+        - dev
+    - name: Make sure a service is restarded
+      systemd: 
+        name: apache2 
+        state: restarted
+      tags:
+        - dev
+    - name: add hosts k8s
+      blockinfile: 
+        path: /etc/hosts
+        block: |
+          192.168.0.102 rancher rancher.example.net
+          192.168.0.148 k8s-1 k8s-1.example.net app1.rancher app1.rancher.example.net
+          192.168.0.162 k8s-2 k8s-2.example.net app2.rancher app2.rancher.example.net
+          192.168.0.163 k8s-3 k8s-3.example.net app3.rancher app3.rancher.example.net
+      tags: 
+        - dev  
+    - name: Connect web server
+      uri:
+        url: http://k8s-1
+        status_code: 200
+      tags: 
+        - dev
